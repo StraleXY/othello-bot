@@ -28,13 +28,14 @@ class Game:
     def get_turn(self):
         return self.turn
 
-    def move(self, row: int, col: int):
+    def move(self, row: int, col: int) -> bool:
         sequences = self.is_valid_move(row, col, self.turn)
         if not sequences:
-            return
+            return False
         self.__play_sequences(sequences)
         if self.has_legal_moves(self.turn):
             self.turn = self.opposite_turn(self.turn)
+        return True
 
     def is_game_over(self) -> bool:
         return not self.has_legal_moves(BLACK) and not self.has_legal_moves(WHITE)
