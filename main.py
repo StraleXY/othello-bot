@@ -8,6 +8,7 @@ class GameGUI:
     def __init__(self, master):
         self.master = master
         master.title("Othello")
+        master.resizable(False, False)
 
         self.game = Game(BLACK)
 
