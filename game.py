@@ -37,12 +37,15 @@ class Game:
             self.turn = self.opposite_turn(self.turn)
         return True
 
+    def get_cells_count(self, turn: str) -> int:
+        return sum(1 for row in self.board for cell in row if cell == turn)
+
     def is_game_over(self) -> bool:
         return not self.has_legal_moves(BLACK) and not self.has_legal_moves(WHITE)
 
     def return_winner(self) -> str:
-        black_score = self.__get_cells_count(BLACK)
-        white_score = self.__get_cells_count(WHITE)
+        black_score = self.get_cells_count(BLACK)
+        white_score = self.get_cells_count(WHITE)
         return WHITE if white_score > black_score else BLACK if black_score > white_score else None
 
     def print_board(self):
@@ -60,8 +63,6 @@ class Game:
         _board[rows // 2][cols // 2] = WHITE
         return _board
 
-    def __get_cells_count(self, turn: str) -> int:
-        return sum(1 for row in self.board for cell in row if cell == turn)
 
     # TODO Make private
     def has_legal_moves(self, turn) -> bool:
