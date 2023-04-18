@@ -23,6 +23,14 @@ class Board:
     def get_turn(self):
         return self.turn
 
+    def find_all_legal_moves(self, turn) -> [(int, int)]:
+        legal_moves = []
+        for row in range(ROWS):
+            for col in range(COLS):
+                if self.__is_legal_move(row, col, turn):
+                    legal_moves.append((row, col))
+        return legal_moves
+
     def move(self, row: int, col: int) -> bool:
         sequences = self.__try_move(row, col, self.turn)
         if not sequences:
@@ -65,20 +73,6 @@ class Board:
                 if self.__is_legal_move(row, col, turn):
                     return True
         return False
-    def __has_legal_moves(self, turn) -> bool:
-        for row in range(ROWS):
-            for col in range(COLS):
-                if self.__is_legal_move(row, col, turn):
-                    return True
-        return False
-
-    def find_all_legal_moves(self, turn) -> [(int, int)]:
-        legal_moves = []
-        for row in range(ROWS):
-            for col in range(COLS):
-                if self.__is_legal_move(row, col, turn):
-                    legal_moves.append((row, col))
-        return legal_moves
 
     def __is_legal_move(self, row, col, turn) -> bool:
         if self.board[row][col] != EMPTY and self.board[row][col] != MOVE:

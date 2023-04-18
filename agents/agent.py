@@ -6,11 +6,11 @@ class Agent(ABC):
 
     def __init__(self):
         self.turn = ''
-        self.game = None
+        self.board = None
 
-    def init(self, game: Board, turn: str):
+    def init(self, board: Board, turn: str):
         self.turn = turn
-        self.game = game
+        self.board = board
 
     @abstractmethod
     def make_move(self):

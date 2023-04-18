@@ -2,6 +2,7 @@ import threading
 import tkinter as tk
 import time
 from agents.agent_random import RandomAgent
+from agents.agent_minimax import MinimaxAgent
 from game import Game
 
 
@@ -17,6 +18,6 @@ if __name__ == "__main__":
     root = tk.Tk()
     game_gui = Game(root)
     # game_gui.set_player(RandomAgent())
-    game_gui.set_players(RandomAgent(), RandomAgent())
+    game_gui.set_players(RandomAgent(), MinimaxAgent())
     root.mainloop()
 
