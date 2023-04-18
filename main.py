@@ -16,6 +16,7 @@ from gui import GameGUI
 if __name__ == "__main__":
     root = tk.Tk()
     game_gui = GameGUI(root)
+    # game_gui.set_player(RandomAgent())
     game_gui.set_players(RandomAgent(), RandomAgent())
     root.mainloop()
 

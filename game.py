@@ -40,10 +40,11 @@ class Game:
             return False
         self.__play_sequence(sequences)
         self.remove_pieces(MOVE)
-        legal_moves = self.find_all_legal_moves(self.opposite_turn(self.turn))
-        if legal_moves:
-            self.__place_sequences(legal_moves, MOVE)
-            self.turn = self.opposite_turn(self.turn)
+        self.turn = self.opposite_turn(self.turn)
+        # legal_moves = self.find_all_legal_moves(self.opposite_turn(self.turn))
+        # if legal_moves:
+        #     self.__place_sequences(legal_moves, MOVE)
+        #     self.turn = self.opposite_turn(self.turn)
         return True
 
     def get_cells_count(self, turn: str) -> int:
