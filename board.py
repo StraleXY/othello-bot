@@ -10,18 +10,14 @@ DIRECTIONS = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 
 class Board:
 
     def __init__(self, turn: str):
-        self.turn = turn
         self.board = self.__new_board(ROWS, COLS)
 
-        legal_moves = self.find_all_legal_moves(self.turn)
+        legal_moves = self.find_all_legal_moves(turn)
         if legal_moves:
             self.__place_sequences(legal_moves, MOVE)
 
     def get_board(self):
         return self.board
-
-    def get_turn(self):
-        return self.turn
 
     def find_all_legal_moves(self, turn) -> [(int, int)]:
         legal_moves = []
@@ -31,15 +27,25 @@ class Board:
                     legal_moves.append((row, col))
         return legal_moves
 
-    def move(self, row: int, col: int) -> bool:
-        sequences = self.__try_move(row, col, self.turn)
+    def move(self, row: int, col: int, turn: str) -> (bool, str):
+        sequences = self.__try_move(row, col, turn)
         if not sequences:
-            return False
-        self.__play_sequence(sequences)
+            return False, turn
+        self.__play_sequence(sequences, turn)
         self.remove_pieces(MOVE)
-        if not self.__prepare_moves(self.opposite_turn(self.turn)):
-            self.__prepare_moves(self.turn)
-        return True
+        if self.__prepare_moves(self.opposite_turn(turn)):
+            return True, self.opposite_turn(turn)
+        else:
+            self.__prepare_moves(turn)
+            return True, turn
+
+    def get_corners(self, turn):
+        corners = [(0, 0), (0, 7), (7, 0), (7, 7)]
+        num_corners = 0
+        for corner in corners:
+            if self.board[corner[0]][corner[1]] == turn:
+                num_corners += 1
+        return num_corners
 
     def get_cells_count(self, turn: str) -> int:
         return sum(1 for row in self.board for cell in row if cell == turn)
@@ -127,13 +133,12 @@ class Board:
         legal_moves = self.find_all_legal_moves(turn)
         if legal_moves:
             self.__place_sequences(legal_moves, MOVE)
-            self.turn = turn
             return True
         return False
 
-    def __play_sequence(self, sequences: [[(int, int)]]):
+    def __play_sequence(self, sequences: [[(int, int)]], turn: str):
         for sequence in sequences:
-            self.__place_sequences(sequence, self.turn)
+            self.__place_sequences(sequence, turn)
 
     def __place_sequences(self, sequence: [(int, int)], piece: str):
         for cell in sequence:

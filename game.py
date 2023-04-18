@@ -8,8 +8,9 @@ from board import Board, BLACK, WHITE, MOVE, ROWS, COLS
 
 class Game:
 
-    def __init__(self, master):
-        self.game = Board(WHITE)
+    def __init__(self, master, turn: str):
+        self.turn = turn
+        self.board = Board(turn)
         self.master = master
         self.__init_gui(self.master)
         self.white: Agent | None = None
@@ -17,11 +18,11 @@ class Game:
         self.game_over: bool = False
 
     def set_player(self, agent: Agent):
-        agent.init(self.game, BLACK)
+        agent.init(self.board, BLACK)
         self.black = agent
 
     def set_players(self, agent_one: Agent, agent_two: Agent):
-        agent_one.init(self.game, WHITE)
+        agent_one.init(self.board, WHITE)
         self.white = agent_one
         self.set_player(agent_two)
 
@@ -53,36 +54,40 @@ class Game:
         self.canvas.bind("<Button-1>", self.__handle_click)
 
     def __handle_click(self, event):
-        if self.white is not None or self.game.turn is not WHITE:
+        if self.white is not None or self.turn is not WHITE:
             return
         row, col = event.y // 50, event.x // 50
-        self.__make_a_move(row, col)
+        self.__make_a_move(row, col, WHITE)
 
-    def __make_a_move(self, row, col):
-        if self.game.move(row, col):
+    def __make_a_move(self, row, col, turn):
+        result = self.board.move(row, col, turn)
+        if result[0]:
+            self.turn = result[1]
             self.__draw_board()
-            if self.game.is_game_over():
+            if self.board.is_game_over():
                 self.game_over = True
                 self.__finish_game()
-            elif self.white is None and self.black is not None and self.game.turn == BLACK:
+            elif self.white is None and self.black is not None and self.turn == BLACK:
                 t = threading.Thread(target=self.__black_plays)
                 t.start()
 
     def __black_plays(self):
         time.sleep(0.25)
-        self.__make_a_move(*self.black.make_move())
+        self.__make_a_move(*self.black.make_move(), BLACK)
 
     def __simulation(self):
         while not self.game_over:
             # time.sleep(0.05)
-            white_move = self.white.make_move()
-            if white_move:
-                self.__make_a_move(*white_move)
+            if self.turn == WHITE:
+                white_move = self.white.make_move()
+                if white_move:
+                    self.__make_a_move(*white_move, WHITE)
 
             # time.sleep(0.05)
-            black_move = self.black.make_move()
-            if black_move:
-                self.__make_a_move(*black_move)
+            if self.turn == BLACK:
+                black_move = self.black.make_move()
+                if black_move:
+                    self.__make_a_move(*black_move, BLACK)
 
     def __draw_board(self):
         self.canvas.delete(tk.ALL)
@@ -98,7 +103,7 @@ class Game:
                 self.canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline="#eee")
 
         # Draw the pieces on the board
-        board = self.game.get_board()
+        board = self.board.get_board()
         for row in range(ROWS):
             for col in range(COLS):
                 x = col * 50 + 25
@@ -111,12 +116,12 @@ class Game:
                     self.canvas.create_oval(x - 20, y - 20, x + 20, y + 20, fill="#FFFCDB", outline="#DFDDBF")
 
         # Update the current player label
-        self.current_player_label.config(text=f"Current player: {self.game.turn}")
-        self.black_score_label.config(text=f"Black: {self.game.get_cells_count(BLACK)}")
-        self.white_score_label.config(text=f"White: {self.game.get_cells_count(WHITE)}")
+        self.current_player_label.config(text=f"Current player: {self.turn}")
+        self.black_score_label.config(text=f"Black: {self.board.get_cells_count(BLACK)}")
+        self.white_score_label.config(text=f"White: {self.board.get_cells_count(WHITE)}")
 
     def __finish_game(self):
-        winner = self.game.return_winner()
+        winner = self.board.return_winner()
         if winner:
             messagebox.showinfo("Game Over", f"The winner is {winner}!")
         else:

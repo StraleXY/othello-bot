@@ -4,6 +4,7 @@ import time
 from agents.agent_random import RandomAgent
 from agents.agent_minimax import MinimaxAgent
 from game import Game
+from board import WHITE
 
 
 # def debug():
@@ -16,8 +17,8 @@ from game import Game
 
 if __name__ == "__main__":
     root = tk.Tk()
-    game_gui = Game(root)
-    # game_gui.set_player(RandomAgent())
-    game_gui.set_players(RandomAgent(), MinimaxAgent())
+    game = Game(root, WHITE)
+    # game.set_player(MinimaxAgent(3))
+    game.set_players(MinimaxAgent(4), MinimaxAgent(2))
     root.mainloop()
 
