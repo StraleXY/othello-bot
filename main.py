@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-from game import Game, BLACK, WHITE
+from game import Game, BLACK, WHITE, EMPTY, MOVE
 
 
 class GameGUI:
@@ -57,6 +57,8 @@ class GameGUI:
                     self.canvas.create_oval(x - 20, y - 20, x + 20, y + 20, fill="black")
                 elif board[row][col] == WHITE:
                     self.canvas.create_oval(x - 20, y - 20, x + 20, y + 20, fill="white")
+                elif board[row][col] == MOVE:
+                    self.canvas.create_oval(x - 20, y - 20, x + 20, y + 20, fill="#FFFCDB", outline="#DFDDBF")
 
         # Update the current player label
         self.current_player_label.config(text=f"Current player: {self.game.turn}")
