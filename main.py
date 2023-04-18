@@ -1,3 +1,4 @@
+import threading
 import tkinter as tk
 import time
 from agents.agent_random import RandomAgent
@@ -15,9 +16,6 @@ from gui import GameGUI
 if __name__ == "__main__":
     root = tk.Tk()
     game_gui = GameGUI(root)
-    game_gui.set_player(RandomAgent())
-    # Debug mode
-    # t = threading.Thread(target=debug)
-    # t.start()
+    game_gui.set_players(RandomAgent(), RandomAgent())
     root.mainloop()
 

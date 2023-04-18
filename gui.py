@@ -27,6 +27,9 @@ class GameGUI:
         self.white = agent_one
         self.set_player(agent_two)
 
+        thread = threading.Thread(target=self.__simulation)
+        thread.start()
+
     def __init_gui(self, master):
         master.title("Othello")
         master.resizable(False, False)
@@ -63,13 +66,27 @@ class GameGUI:
             self.__draw_board()
             if self.game.is_game_over():
                 self.__finish_game()
-            elif self.game.turn == BLACK:
+            elif self.white is None and self.black is not None and self.game.turn == BLACK:
                 t = threading.Thread(target=self.__black_plays)
                 t.start()
 
     def __black_plays(self):
         time.sleep(0.25)
         self.__make_a_move(*self.black.make_move())
+
+    def __simulation(self):
+        while True:
+            # time.sleep(0.05)
+            white_move = self.white.make_move()
+            if not white_move:
+                break
+            self.__make_a_move(*white_move)
+
+            # time.sleep(0.05)
+            black_move = self.black.make_move()
+            if not black_move:
+                break
+            self.__make_a_move(*black_move)
 
     def __draw_board(self):
         self.canvas.delete(tk.ALL)
