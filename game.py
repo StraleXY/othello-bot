@@ -22,7 +22,6 @@ class Game:
             self.__place_sequences(legal_moves, MOVE)
             self.print_board()
 
-
     def get_rows(self):
         return self.rows
 
@@ -76,19 +75,16 @@ class Game:
     def __has_legal_moves(self, turn) -> bool:
         for row in range(self.rows):
             for col in range(self.cols):
-                if self.board[row][col] == EMPTY:
-                    if self.__is_legal_move(row, col, turn):
-                        return True
+                if self.__is_legal_move(row, col, turn):
+                    return True
         return False
 
     def __find_all_legal_moves(self, turn) -> [(int, int)]:
         legal_moves = []
         for row in range(self.rows):
             for col in range(self.cols):
-                if self.board[row][col] == EMPTY:
-                    if self.__is_legal_move(row, col, turn):
-                        legal_moves.append((row, col))
-
+                if self.__is_legal_move(row, col, turn):
+                    legal_moves.append((row, col))
         return legal_moves
 
     def __is_legal_move(self, row, col, turn) -> bool:
@@ -99,14 +95,17 @@ class Game:
             r, c = row + row_direction, col + col_direction
             taken_pieces = []
             while 0 <= r < self.rows and 0 <= c < self.cols:
-                if self.board[r][c] == self.opposite_turn(turn):
+                if self.board[r][c] == EMPTY:
+                    break
+                elif self.board[r][c] == turn:
+                    if taken_pieces:
+                        return True
+                    else:
+                        break
+                else:
                     taken_pieces.append(self.board[r][c])
                     r += row_direction
                     c += col_direction
-                elif self.board[r][c] == turn and taken_pieces:
-                    return True
-                else:
-                    break
 
         return False
 

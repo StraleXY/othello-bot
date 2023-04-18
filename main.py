@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
 from game import Game, BLACK, WHITE, EMPTY, MOVE
+import threading
+import time
 
 
 class GameGUI:
@@ -68,6 +70,12 @@ class GameGUI:
     def handle_click(self, event):
         col = event.x // 50
         row = event.y // 50
+        self.make_a_move(row, col)
+
+        # with open("debug_moves.txt", "a") as f:
+        #     f.write("{},{}/n".format(row, col))
+
+    def make_a_move(self, row, col):
         if self.game.move(row, col):
             self.game.print_board()
             self.draw_board()
@@ -79,7 +87,19 @@ class GameGUI:
                     messagebox.showinfo("Game Over", "It's a tie!")
 
 
+def debug():
+    with open('debug_moves.txt', 'r') as f:
+        for line in f:
+            x, y = line.strip().split(',')
+            game_gui.make_a_move(int(x), int(y))
+            time.sleep(0.1)
+
+
 if __name__ == "__main__":
     root = tk.Tk()
     game_gui = GameGUI(root)
+    # Debug mode
+    # t = threading.Thread(target=debug)
+    # t.start()
     root.mainloop()
+
