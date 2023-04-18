@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from game import Game
+from board import Board
 
 
 class Agent(ABC):
@@ -8,7 +8,7 @@ class Agent(ABC):
         self.turn = ''
         self.game = None
 
-    def init(self, game: Game, turn: str):
+    def init(self, game: Board, turn: str):
         self.turn = turn
         self.game = game
 
