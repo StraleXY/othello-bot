@@ -7,5 +7,4 @@ class RandomAgent(Agent):
         moves = self.game.find_all_legal_moves(self.turn)
         if not moves:
             return None
-        move = random.choice(moves)
-        return move
+        return random.choice(moves)

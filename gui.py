@@ -17,6 +17,7 @@ class GameGUI:
         self.__init_gui(self.master)
         self.white: Agent | None = None
         self.black: Agent | None = None
+        self.game_over: bool = False
 
     def set_player(self, agent: Agent):
         agent.init(self.game, BLACK)
@@ -62,9 +63,9 @@ class GameGUI:
 
     def __make_a_move(self, row, col):
         if self.game.move(row, col):
-            self.game.print_board()
             self.__draw_board()
             if self.game.is_game_over():
+                self.game_over = True
                 self.__finish_game()
             elif self.white is None and self.black is not None and self.game.turn == BLACK:
                 t = threading.Thread(target=self.__black_plays)
@@ -75,18 +76,16 @@ class GameGUI:
         self.__make_a_move(*self.black.make_move())
 
     def __simulation(self):
-        while True:
+        while not self.game_over:
             # time.sleep(0.05)
             white_move = self.white.make_move()
-            if not white_move:
-                break
-            self.__make_a_move(*white_move)
+            if white_move:
+                self.__make_a_move(*white_move)
 
             # time.sleep(0.05)
             black_move = self.black.make_move()
-            if not black_move:
-                break
-            self.__make_a_move(*black_move)
+            if black_move:
+                self.__make_a_move(*black_move)
 
     def __draw_board(self):
         self.canvas.delete(tk.ALL)

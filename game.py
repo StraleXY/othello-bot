@@ -40,12 +40,17 @@ class Game:
             return False
         self.__play_sequence(sequences)
         self.remove_pieces(MOVE)
-        self.turn = self.opposite_turn(self.turn)
-        # legal_moves = self.find_all_legal_moves(self.opposite_turn(self.turn))
-        # if legal_moves:
-        #     self.__place_sequences(legal_moves, MOVE)
-        #     self.turn = self.opposite_turn(self.turn)
+        if not self.__prepare_moves(self.opposite_turn(self.turn)):
+            self.__prepare_moves(self.turn)
         return True
+
+    def __prepare_moves(self, turn) -> bool:
+        legal_moves = self.find_all_legal_moves(turn)
+        if legal_moves:
+            self.__place_sequences(legal_moves, MOVE)
+            self.turn = turn
+            return True
+        return False
 
     def get_cells_count(self, turn: str) -> int:
         return sum(1 for row in self.board for cell in row if cell == turn)
