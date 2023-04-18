@@ -17,7 +17,7 @@ class Game:
         self.turn = turn  # Indicates who should play next 'B' or 'W'
         self.board = self.__new_board(rows, cols)
 
-        legal_moves = self.__find_all_legal_moves(self.turn)
+        legal_moves = self.find_all_legal_moves(self.turn)
         if legal_moves:
             self.__place_sequences(legal_moves, MOVE)
             self.print_board()
@@ -39,8 +39,8 @@ class Game:
         if not sequences:
             return False
         self.__play_sequence(sequences)
-        self.__remove_pieces(MOVE)
-        legal_moves = self.__find_all_legal_moves(self.opposite_turn(self.turn))
+        self.remove_pieces(MOVE)
+        legal_moves = self.find_all_legal_moves(self.opposite_turn(self.turn))
         if legal_moves:
             self.__place_sequences(legal_moves, MOVE)
             self.turn = self.opposite_turn(self.turn)
@@ -79,7 +79,9 @@ class Game:
                     return True
         return False
 
-    def __find_all_legal_moves(self, turn) -> [(int, int)]:
+    def find_all_legal_moves(self, turn) -> [(int, int)]:
+        print("Looking for move {}".format(turn))
+        self.print_board()
         legal_moves = []
         for row in range(self.rows):
             for col in range(self.cols):
@@ -88,7 +90,7 @@ class Game:
         return legal_moves
 
     def __is_legal_move(self, row, col, turn) -> bool:
-        if self.board[row][col] != EMPTY:
+        if self.board[row][col] != EMPTY and self.board[row][col] != MOVE:
             return False
 
         for row_direction, col_direction in DIRECTIONS:
@@ -102,6 +104,8 @@ class Game:
                         return True
                     else:
                         break
+                if self.board[r][c] == MOVE:
+                    break
                 else:
                     taken_pieces.append(self.board[r][c])
                     r += row_direction
@@ -142,7 +146,7 @@ class Game:
         for cell in sequence:
             self.board[cell[0]][cell[1]] = piece
 
-    def __remove_pieces(self, piece: str):
+    def remove_pieces(self, piece: str):
         self.board = [[EMPTY if element == piece else element for element in inner_lst] for inner_lst in self.board]
 
     @staticmethod
