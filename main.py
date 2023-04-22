@@ -3,6 +3,7 @@ import tkinter as tk
 import time
 from agents.agent_random import RandomAgent
 from agents.agent_minimax import MinimaxAgent
+from agents.agent_carlo import CarloAgent
 from game import Game
 from board import WHITE
 
@@ -18,7 +19,16 @@ from board import WHITE
 if __name__ == "__main__":
     root = tk.Tk()
     game = Game(root, WHITE)
+
+    # RandomAgent() - Igra random poteze
+    # MinimaxAgent(dubina) - Igra sa zadatom dubinom
+    # CarloAgent(br_simulacija, exploration_factor) - Igra pomocu monte karlo pretrage sa datim brojem simulacija i sa datim faktorom istrazivanja
+
+    # Ukoliko je igrac protiv agenta koristiti poziv linije 28
     # game.set_player(MinimaxAgent(3))
-    game.set_players(MinimaxAgent(4), MinimaxAgent(2))
+
+    # Ukoliko je agent prtiv agenta korisitit poziv linije 31
+    game.set_players(CarloAgent(250, 1.2), MinimaxAgent(3))
+
     root.mainloop()
 
