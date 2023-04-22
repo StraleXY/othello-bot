@@ -1,150 +1,133 @@
-EMPTY = '.'
-WHITE = 'W'
-BLACK = 'B'
-MOVE = 'x'
-DIRECTIONS = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
-
-
-class IllegalMoveException(Exception):
-    pass
+import threading
+import time
+import tkinter as tk
+from tkinter import messagebox
+from agents.agent import Agent
+from board import Board, BLACK, WHITE, MOVE, ROWS, COLS
 
 
 class Game:
 
-    def __init__(self, turn: str, rows: int = 8, cols: int = 8):
-        self.rows = rows
-        self.cols = cols
-        self.turn = turn  # Indicates who should play next 'B' or 'W'
-        self.board = self.__new_board(rows, cols)
+    def __init__(self, master, turn: str):
+        self.turn = turn
+        self.board = Board(turn)
+        self.master = master
+        self.__init_gui(self.master)
+        self.white: Agent | None = None
+        self.black: Agent | None = None
+        self.game_over: bool = False
 
-        legal_moves = self.__find_all_legal_moves(self.turn)
-        if legal_moves:
-            self.__place_sequences(legal_moves, MOVE)
-            self.print_board()
+    def set_player(self, agent: Agent):
+        agent.init(self.board, BLACK)
+        self.black = agent
 
-    def get_rows(self):
-        return self.rows
+    def set_players(self, agent_one: Agent, agent_two: Agent):
+        agent_one.init(self.board, WHITE)
+        self.white = agent_one
+        self.set_player(agent_two)
 
-    def get_cols(self):
-        return self.cols
+        thread = threading.Thread(target=self.__simulation)
+        thread.start()
 
-    def get_board(self):
-        return self.board
+    def __init_gui(self, master):
+        master.title("Othello")
+        master.resizable(False, False)
 
-    def get_turn(self):
-        return self.turn
+        # Show score
+        self.score_frame = tk.Frame(master, bg="#353535")
+        self.score_frame.pack(side=tk.TOP, fill=tk.X)
+        self.black_score_label = tk.Label(self.score_frame, text=f"Black: 3", fg="white", bg="#353535", font=("Arial", 18))
+        self.black_score_label.pack(side=tk.LEFT, padx=20, pady=10)
+        self.white_score_label = tk.Label(self.score_frame, text=f"White: 2", fg="white", bg="#353535", font=("Arial", 18))
+        self.white_score_label.pack(side=tk.RIGHT, padx=20, pady=10)
 
-    def move(self, row: int, col: int) -> bool:
-        sequences = self.__try_move(row, col, self.turn)
-        if not sequences:
-            return False
-        self.__play_sequence(sequences)
-        self.__remove_pieces(MOVE)
-        legal_moves = self.__find_all_legal_moves(self.opposite_turn(self.turn))
-        if legal_moves:
-            self.__place_sequences(legal_moves, MOVE)
-            self.turn = self.opposite_turn(self.turn)
-        return True
+        # Show board
+        self.canvas = tk.Canvas(master, width=400, height=400)
+        self.canvas.pack(fill=tk.BOTH, expand=True)
 
-    def get_cells_count(self, turn: str) -> int:
-        return sum(1 for row in self.board for cell in row if cell == turn)
+        # Show current player
+        self.current_player_label = tk.Label(master, text=f"Current player: {BLACK}", font=("Arial", 13), bg="#353535", fg="white", pady=8)
+        self.current_player_label.pack(side=tk.BOTTOM, fill=tk.X)
 
-    def is_game_over(self) -> bool:
-        return not self.__has_legal_moves(BLACK) and not self.__has_legal_moves(WHITE)
+        self.__draw_board()
 
-    def return_winner(self) -> str:
-        black_score = self.get_cells_count(BLACK)
-        white_score = self.get_cells_count(WHITE)
-        return WHITE if white_score > black_score else BLACK if black_score > white_score else None
+        self.canvas.bind("<Button-1>", self.__handle_click)
 
-    def print_board(self):
-        for row in self.board:
-            print(' '.join(row))
-        print('---------------')
+    def __handle_click(self, event):
+        if self.white is not None or self.turn is not WHITE:
+            return
+        row, col = event.y // 50, event.x // 50
+        self.__make_a_move(row, col, WHITE)
 
-    # Private
-    @staticmethod
-    def __new_board(rows: int, cols: int) -> [[str]]:
-        _board = [[EMPTY for _ in range(cols)] for _ in range(rows)]
-        _board[rows // 2 - 1][cols // 2 - 1] = WHITE
-        _board[rows // 2 - 1][cols // 2] = BLACK
-        _board[rows // 2][cols // 2 - 1] = BLACK
-        _board[rows // 2][cols // 2] = WHITE
-        return _board
+    def __make_a_move(self, row, col, turn):
+        result = self.board.move(row, col, turn)
+        if result[0]:
+            self.turn = result[1]
+            self.__draw_board()
+            if self.board.is_game_over():
+                self.game_over = True
+                self.__finish_game()
+            elif self.white is None and self.black is not None and self.turn == BLACK:
+                t = threading.Thread(target=self.__black_plays)
+                t.start()
 
-    def __has_legal_moves(self, turn) -> bool:
-        for row in range(self.rows):
-            for col in range(self.cols):
-                if self.__is_legal_move(row, col, turn):
-                    return True
-        return False
+    def __black_plays(self):
+        time.sleep(0.25)
+        self.__make_a_move(*self.black.make_move(), BLACK)
 
-    def __find_all_legal_moves(self, turn) -> [(int, int)]:
-        legal_moves = []
-        for row in range(self.rows):
-            for col in range(self.cols):
-                if self.__is_legal_move(row, col, turn):
-                    legal_moves.append((row, col))
-        return legal_moves
+    def __simulation(self):
+        while not self.game_over:
+            # time.sleep(0.05)
+            if self.turn == WHITE:
+                white_move = self.white.make_move()
+                if white_move:
+                    self.__make_a_move(*white_move, WHITE)
 
-    def __is_legal_move(self, row, col, turn) -> bool:
-        if self.board[row][col] != EMPTY:
-            return False
+            # time.sleep(0.05)
+            if self.turn == BLACK:
+                black_move = self.black.make_move()
+                if black_move:
+                    self.__make_a_move(*black_move, BLACK)
 
-        for row_direction, col_direction in DIRECTIONS:
-            r, c = row + row_direction, col + col_direction
-            taken_pieces = []
-            while 0 <= r < self.rows and 0 <= c < self.cols:
-                if self.board[r][c] == EMPTY:
-                    break
-                elif self.board[r][c] == turn:
-                    if taken_pieces:
-                        return True
-                    else:
-                        break
-                else:
-                    taken_pieces.append(self.board[r][c])
-                    r += row_direction
-                    c += col_direction
+    def __draw_board(self):
+        self.canvas.delete(tk.ALL)
 
-        return False
+        # Draw the cells of the board
+        for row in range(ROWS):
+            for col in range(COLS):
+                x1 = col * 50
+                y1 = row * 50
+                x2 = x1 + 50
+                y2 = y1 + 50
+                color = "#eeeeee" if (row + col) % 2 == 0 else "#f8f8f8"
+                self.canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline="#eee")
 
-    def __try_move(self, row, col, turn) -> [[(int, int)]]:
-        if self.board[row][col] != MOVE:
-            return False
+        # Draw the pieces on the board
+        board = self.board.get_board()
+        for row in range(ROWS):
+            for col in range(COLS):
+                x = col * 50 + 25
+                y = row * 50 + 25
+                if board[row][col] == BLACK:
+                    self.canvas.create_oval(x - 20, y - 20, x + 20, y + 20, fill="black")
+                elif board[row][col] == WHITE:
+                    self.canvas.create_oval(x - 20, y - 20, x + 20, y + 20, fill="white")
+                elif board[row][col] == MOVE:
+                    self.canvas.create_oval(x - 20, y - 20, x + 20, y + 20, fill="#FFFCDB", outline="#DFDDBF")
 
-        valid_sequences = []
+        # Update the current player label
+        self.current_player_label.config(text=f"Current player: {self.turn}")
+        self.black_score_label.config(text=f"Black: {self.board.get_cells_count(BLACK)}")
+        self.white_score_label.config(text=f"White: {self.board.get_cells_count(WHITE)}")
 
-        for row_direction, col_direction in DIRECTIONS:
-            r, c = row + row_direction, col + col_direction
-            taken_pieces = []
-            sequence = [(row, col)]
-            while 0 <= r < self.rows and 0 <= c < self.cols:
-                if self.board[r][c] == self.opposite_turn(turn):
-                    taken_pieces.append(self.board[r][c])
-                    sequence.append((r, c))
-                    r += row_direction
-                    c += col_direction
-                elif self.board[r][c] == turn and taken_pieces:
-                    sequence.append((r, c))
-                    valid_sequences.append(sequence)
-                    break
-                else:
-                    break
-
-        return valid_sequences
-
-    def __play_sequence(self, sequences: [[(int, int)]]):
-        for sequence in sequences:
-            self.__place_sequences(sequence, self.turn)
-
-    def __place_sequences(self, sequence: [(int, int)], piece: str):
-        for cell in sequence:
-            self.board[cell[0]][cell[1]] = piece
-
-    def __remove_pieces(self, piece: str):
-        self.board = [[EMPTY if element == piece else element for element in inner_lst] for inner_lst in self.board]
+    def __finish_game(self):
+        winner = self.board.return_winner()
+        if winner:
+            messagebox.showinfo("Game Over", f"The winner is {winner}!")
+        else:
+            messagebox.showinfo("Game Over", "It's a tie!")
 
     @staticmethod
-    def opposite_turn(turn: str):
-        return WHITE if turn == BLACK else BLACK
+    def __write_move_to_file(row: int, col: int):
+        with open("debug_moves.txt", "a") as f:
+            f.write("{},{}/n".format(row, col))
