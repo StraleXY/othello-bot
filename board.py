@@ -11,6 +11,7 @@ class Board:
 
     def __init__(self, turn: str):
         self.board = self.__new_board(ROWS, COLS)
+        self.last_move = None
 
         legal_moves = self.find_all_legal_moves(turn)
         if legal_moves:
@@ -33,6 +34,7 @@ class Board:
             return False, turn
         self.__play_sequence(sequences, turn)
         self.remove_pieces(MOVE)
+        self.last_move = (row, col)
         if self.__prepare_moves(self.opposite_turn(turn)):
             return True, self.opposite_turn(turn)
         else:
