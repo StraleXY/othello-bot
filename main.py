@@ -4,6 +4,7 @@ import time
 from agents.agent_random import RandomAgent
 from agents.agent_minimax import MinimaxAgent
 from agents.agent_carlo import CarloAgent
+from agents.agent_probcut import ProbCutAgent
 from game import Game
 from board import WHITE
 
@@ -28,7 +29,8 @@ if __name__ == "__main__":
     # game.set_player(MinimaxAgent(3))
 
     # Ukoliko je agent prtiv agenta korisitit poziv linije 31
-    game.set_players(CarloAgent(250, 1.2), MinimaxAgent(3))
+    # game.set_players(ProbCutAgent(2), ProbCutAgent(3))
+    game.set_players(MinimaxAgent(2), ProbCutAgent(4))
 
     root.mainloop()
 
