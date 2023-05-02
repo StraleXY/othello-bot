@@ -86,7 +86,20 @@ class Game:
             self.thread.start()
 
     def  __open_settings(self):
-        pass
+        self.settings_window = tk.Toplevel(self.master)
+        self.settings_window.title("Settings")
+
+        # Create the dropdowns for selecting players
+        player1_label = tk.Label(self.settings_window, text="Player 1")
+        player1_label.grid(row=0, column=0)
+        player_options = ["Human", "Minimax", "ProbCut", "Monte Carlo"]
+        player1_dropdown = tk.OptionMenu(self.settings_window, player_options, *player_options)
+        player1_dropdown.grid(column=1, row=0, padx=5, pady=5)
+
+        player2_label = tk.Label(self.settings_window, text="Player 2")
+        player2_label.grid(row=1, column=0)
+        player2_dropdown = tk.OptionMenu(self.settings_window, player_options, *player_options)
+        player2_dropdown.grid(row=1, column=1, padx=5, pady=5)
 
     def __make_a_move(self, row, col, turn):
         result = self.board.move(row, col, turn)
