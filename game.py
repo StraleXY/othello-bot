@@ -13,10 +13,12 @@ class Game:
         self.turn = turn
         self.board = Board(turn)
         self.master = master
+        self.thread = None
         self.__init_gui(self.master)
         self.white: Agent | None = None
         self.black: Agent | None = None
         self.game_over: bool = False
+        self.game_no: int = 0
 
     def set_player(self, agent: Agent):
         agent.init(self.board, BLACK)
@@ -27,8 +29,8 @@ class Game:
         self.white = agent_one
         self.set_player(agent_two)
 
-        thread = threading.Thread(target=self.__simulation)
-        thread.start()
+        self.thread = threading.Thread(target=self.__simulation, args=(self.game_no, ))
+        self.thread.start()
 
     def __init_gui(self, master):
         master.title("Othello")
@@ -50,6 +52,14 @@ class Game:
         self.current_player_label = tk.Label(master, text=f"Current player: {BLACK}", font=("Arial", 13), bg="#353535", fg="white", pady=8)
         self.current_player_label.pack(side=tk.BOTTOM, fill=tk.X)
 
+        # Options buttons
+        self.options_frame = tk.Frame(master, bg="#353535", padx=10, pady=10)
+        self.options_frame.pack(side=tk.BOTTOM, fill=tk.X)
+        self.reset_button = tk.Button(self.options_frame, text="RESET GAME", bg="#353535", fg="white", padx=4, pady=4, command=self.__reset_game)
+        self.reset_button.pack(side=tk.LEFT)
+        self.settings_button = tk.Button(self.options_frame, text="SETTINGS", bg="#353535", fg="white", padx=4, pady=4, command=self.__open_settings)
+        self.settings_button.pack(side=tk.RIGHT)
+
         self.__draw_board()
 
         self.canvas.bind("<Button-1>", self.__handle_click)
@@ -59,6 +69,24 @@ class Game:
             return
         row, col = event.y // FIELD_SIZE, event.x // FIELD_SIZE
         self.__make_a_move(row, col, WHITE)
+
+    def __reset_game(self):
+        self.game_over = True
+        self.turn = WHITE
+        self.board = Board(self.turn)
+        self.__draw_board()
+        if self.white is not None:
+            self.white.init(self.board, WHITE)
+        if self.black is not None:
+            self.black.init(self.board, BLACK)
+        self.game_over = False
+        if self.thread is not None:
+            self.game_no += 1
+            self.thread = threading.Thread(target=self.__simulation, args=(self.game_no,))
+            self.thread.start()
+
+    def  __open_settings(self):
+        pass
 
     def __make_a_move(self, row, col, turn):
         result = self.board.move(row, col, turn)
@@ -76,8 +104,9 @@ class Game:
         time.sleep(0.25)
         self.__make_a_move(*self.black.make_move(), BLACK)
 
-    def __simulation(self):
-        while not self.game_over:
+    def __simulation(self, no: int):
+        print(no)
+        while not self.game_over and no == self.game_no:
             if self.turn == WHITE:
                 white_move = self.white.make_move()
                 if white_move:
