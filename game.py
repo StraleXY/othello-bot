@@ -5,6 +5,7 @@ from tkinter import messagebox
 from agents.agent import Agent
 from board import Board, BLACK, WHITE, MOVE, ROWS, COLS
 
+FIELD_SIZE = 70
 
 class Game:
 
@@ -12,10 +13,12 @@ class Game:
         self.turn = turn
         self.board = Board(turn)
         self.master = master
+        self.thread = None
         self.__init_gui(self.master)
         self.white: Agent | None = None
         self.black: Agent | None = None
         self.game_over: bool = False
+        self.game_no: int = 0
 
     def set_player(self, agent: Agent):
         agent.init(self.board, BLACK)
@@ -26,8 +29,8 @@ class Game:
         self.white = agent_one
         self.set_player(agent_two)
 
-        thread = threading.Thread(target=self.__simulation)
-        thread.start()
+        self.thread = threading.Thread(target=self.__simulation, args=(self.game_no, ))
+        self.thread.start()
 
     def __init_gui(self, master):
         master.title("Othello")
@@ -36,18 +39,26 @@ class Game:
         # Show score
         self.score_frame = tk.Frame(master, bg="#353535")
         self.score_frame.pack(side=tk.TOP, fill=tk.X)
-        self.black_score_label = tk.Label(self.score_frame, text=f"Black: 3", fg="white", bg="#353535", font=("Arial", 18))
-        self.black_score_label.pack(side=tk.LEFT, padx=20, pady=10)
         self.white_score_label = tk.Label(self.score_frame, text=f"White: 2", fg="white", bg="#353535", font=("Arial", 18))
-        self.white_score_label.pack(side=tk.RIGHT, padx=20, pady=10)
+        self.white_score_label.pack(side=tk.LEFT, padx=20, pady=10)
+        self.black_score_label = tk.Label(self.score_frame, text=f"Black: 3", fg="white", bg="#353535", font=("Arial", 18))
+        self.black_score_label.pack(side=tk.RIGHT, padx=20, pady=10)
 
         # Show board
-        self.canvas = tk.Canvas(master, width=400, height=400)
+        self.canvas = tk.Canvas(master, width=FIELD_SIZE*COLS, height=FIELD_SIZE*ROWS)
         self.canvas.pack(fill=tk.BOTH, expand=True)
 
         # Show current player
         self.current_player_label = tk.Label(master, text=f"Current player: {BLACK}", font=("Arial", 13), bg="#353535", fg="white", pady=8)
         self.current_player_label.pack(side=tk.BOTTOM, fill=tk.X)
+
+        # Options buttons
+        self.options_frame = tk.Frame(master, bg="#353535", padx=10, pady=10)
+        self.options_frame.pack(side=tk.BOTTOM, fill=tk.X)
+        self.reset_button = tk.Button(self.options_frame, text="RESET GAME", bg="#353535", fg="white", padx=4, pady=4, command=self.__reset_game)
+        self.reset_button.pack(side=tk.LEFT)
+        self.settings_button = tk.Button(self.options_frame, text="SETTINGS", bg="#353535", fg="white", padx=4, pady=4, command=self.__open_settings)
+        self.settings_button.pack(side=tk.RIGHT)
 
         self.__draw_board()
 
@@ -56,8 +67,39 @@ class Game:
     def __handle_click(self, event):
         if self.white is not None or self.turn is not WHITE:
             return
-        row, col = event.y // 50, event.x // 50
+        row, col = event.y // FIELD_SIZE, event.x // FIELD_SIZE
         self.__make_a_move(row, col, WHITE)
+
+    def __reset_game(self):
+        self.game_over = True
+        self.turn = WHITE
+        self.board = Board(self.turn)
+        self.__draw_board()
+        if self.white is not None:
+            self.white.init(self.board, WHITE)
+        if self.black is not None:
+            self.black.init(self.board, BLACK)
+        self.game_over = False
+        if self.thread is not None:
+            self.game_no += 1
+            self.thread = threading.Thread(target=self.__simulation, args=(self.game_no,))
+            self.thread.start()
+
+    def  __open_settings(self):
+        self.settings_window = tk.Toplevel(self.master)
+        self.settings_window.title("Settings")
+
+        # Create the dropdowns for selecting players
+        player1_label = tk.Label(self.settings_window, text="Player 1")
+        player1_label.grid(row=0, column=0)
+        player_options = ["Human", "Minimax", "ProbCut", "Monte Carlo"]
+        player1_dropdown = tk.OptionMenu(self.settings_window, player_options, *player_options)
+        player1_dropdown.grid(column=1, row=0, padx=5, pady=5)
+
+        player2_label = tk.Label(self.settings_window, text="Player 2")
+        player2_label.grid(row=1, column=0)
+        player2_dropdown = tk.OptionMenu(self.settings_window, player_options, *player_options)
+        player2_dropdown.grid(row=1, column=1, padx=5, pady=5)
 
     def __make_a_move(self, row, col, turn):
         result = self.board.move(row, col, turn)
@@ -75,15 +117,14 @@ class Game:
         time.sleep(0.25)
         self.__make_a_move(*self.black.make_move(), BLACK)
 
-    def __simulation(self):
-        while not self.game_over:
-            # time.sleep(0.05)
+    def __simulation(self, no: int):
+        print(no)
+        while not self.game_over and no == self.game_no:
             if self.turn == WHITE:
                 white_move = self.white.make_move()
                 if white_move:
                     self.__make_a_move(*white_move, WHITE)
 
-            # time.sleep(0.05)
             if self.turn == BLACK:
                 black_move = self.black.make_move()
                 if black_move:
@@ -95,25 +136,26 @@ class Game:
         # Draw the cells of the board
         for row in range(ROWS):
             for col in range(COLS):
-                x1 = col * 50
-                y1 = row * 50
-                x2 = x1 + 50
-                y2 = y1 + 50
+                x1 = col * FIELD_SIZE
+                y1 = row * FIELD_SIZE
+                x2 = x1 + FIELD_SIZE
+                y2 = y1 + FIELD_SIZE
                 color = "#eeeeee" if (row + col) % 2 == 0 else "#f8f8f8"
                 self.canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline="#eee")
 
         # Draw the pieces on the board
         board = self.board.get_board()
+        disk_offset = FIELD_SIZE / 2 - 8
         for row in range(ROWS):
             for col in range(COLS):
-                x = col * 50 + 25
-                y = row * 50 + 25
+                x = col * FIELD_SIZE + (FIELD_SIZE / 2)
+                y = row * FIELD_SIZE + (FIELD_SIZE / 2)
                 if board[row][col] == BLACK:
-                    self.canvas.create_oval(x - 20, y - 20, x + 20, y + 20, fill="black")
+                    self.canvas.create_oval(x - disk_offset, y - disk_offset, x + disk_offset, y + disk_offset, fill="black")
                 elif board[row][col] == WHITE:
-                    self.canvas.create_oval(x - 20, y - 20, x + 20, y + 20, fill="white")
+                    self.canvas.create_oval(x - disk_offset, y - disk_offset, x + disk_offset, y + disk_offset, fill="white")
                 elif board[row][col] == MOVE:
-                    self.canvas.create_oval(x - 20, y - 20, x + 20, y + 20, fill="#FFFCDB", outline="#DFDDBF")
+                    self.canvas.create_oval(x - disk_offset, y - disk_offset, x + disk_offset, y + disk_offset, fill="#FFFCDB", outline="#DFDDBF")
 
         # Update the current player label
         self.current_player_label.config(text=f"Current player: {self.turn}")
