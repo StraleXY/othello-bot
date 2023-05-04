@@ -3,7 +3,7 @@ from typing import Tuple
 from agents.utils import heuristic
 from math import inf
 from agents.agent import Agent
-from game import Board
+from board import Board
 
 
 class ExpectimaxAgent(Agent):
