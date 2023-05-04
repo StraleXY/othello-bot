@@ -86,7 +86,7 @@ class Game:
             self.thread.start()
 
     def  __open_settings(self):
-        self.settings_window = tk.Toplevel(self.master)
+        self.settings_window = tk.Toplevel(self.master, padx=80, pady=40)
         self.settings_window.title("Settings")
 
         def callback1(*args):
@@ -95,29 +95,37 @@ class Game:
                 depth1_dropdown.grid_forget()
                 simulation1_label.grid_forget()
                 simulation1_dropdown.grid_forget()
-                delta1_label.grid_forget()
-                delta1_dropdown.grid_forget()
-            elif player1.get() == "Minimax":
+                exploration1_label.grid_forget()
+                exploration1_dropdown.grid_forget()
+                probcut1_label.grid_forget()
+                probcut1_dropdown.grid_forget()
+            elif player1.get() == "Minimax" or player1.get() == "Expectimax":
                 depth1_label.grid(row=1, column=0)
                 depth1_dropdown.grid(row=1, column=1, padx=10, pady=10)
                 simulation1_label.grid_forget()
                 simulation1_dropdown.grid_forget()
-                delta1_label.grid_forget()
-                delta1_dropdown.grid_forget()
+                exploration1_label.grid_forget()
+                exploration1_dropdown.grid_forget()
+                probcut1_label.grid_forget()
+                probcut1_dropdown.grid_forget()
             elif player1.get() == "Monte Carlo":
-                depth1_label.grid(row=1, column=0)
-                depth1_dropdown.grid(row=1, column=1, padx=10, pady=10)
-                simulation1_label.grid(row=2, column=0)
-                simulation1_dropdown.grid(row=2, column=1, padx=10, pady=10)
-                delta1_label.grid_forget()
-                delta1_dropdown.grid_forget()
+                depth1_label.grid_forget()
+                depth1_dropdown.grid_forget()
+                simulation1_label.grid(row=1, column=0)
+                simulation1_dropdown.grid(row=1, column=1, padx=10, pady=10)
+                exploration1_label.grid(row=2, column=0)
+                exploration1_dropdown.grid(row=2, column=1, padx=10, pady=10)
+                probcut1_label.grid_forget()
+                probcut1_dropdown.grid_forget()
             elif player1.get() == "ProbCut":
                 depth1_label.grid(row=1, column=0)
                 depth1_dropdown.grid(row=1, column=1, padx=10, pady=10)
                 simulation1_label.grid_forget()
                 simulation1_dropdown.grid_forget()
-                delta1_label.grid(row=2, column=0)
-                delta1_dropdown.grid(row=2, column=1, padx=10, pady=10)
+                exploration1_label.grid_forget()
+                exploration1_dropdown.grid_forget()
+                probcut1_label.grid(row=2, column=0)
+                probcut1_dropdown.grid(row=2, column=1, padx=10, pady=10)
 
         def callback2(*args):
             if player2.get() == "Human" or player2.get() == "Random":
@@ -125,31 +133,39 @@ class Game:
                 depth2_dropdown.grid_forget()
                 simulation2_label.grid_forget()
                 simulation2_dropdown.grid_forget()
-                delta2_label.grid_forget()
-                delta2_dropdown.grid_forget()
-            elif player2.get() == "Minimax":
+                exploration2_dropdown.grid_forget()
+                exploration2_label.grid_forget()
+                probcut2_label.grid_forget()
+                probcut2_dropdown.grid_forget()
+            elif player2.get() == "Minimax" or player2.get() == "Expectimax":
                 depth2_label.grid(row=1, column=2)
                 depth2_dropdown.grid(row=1, column=3, padx=10, pady=10)
                 simulation2_label.grid_forget()
                 simulation2_dropdown.grid_forget()
-                delta2_label.grid_forget()
-                delta2_dropdown.grid_forget()
+                exploration2_label.grid_forget()
+                exploration2_dropdown.grid_forget()
+                probcut2_label.grid_forget()
+                probcut2_dropdown.grid_forget()
             elif player2.get() == "Monte Carlo":
-                depth2_label.grid(row=1, column=2)
-                depth2_dropdown.grid(row=1, column=3, padx=10, pady=10)
-                simulation2_label.grid(row=2, column=2)
-                simulation2_dropdown.grid(row=2, column=3, padx=10, pady=10)
-                delta2_label.grid_forget()
-                delta2_dropdown.grid_forget()
+                depth2_label.grid_forget()
+                depth2_dropdown.grid_forget()
+                simulation2_label.grid(row=1, column=2)
+                simulation2_dropdown.grid(row=1, column=3, padx=10, pady=10)
+                exploration2_label.grid(row=2, column=2)
+                exploration2_dropdown.grid(row=2, column=3, padx=10, pady=10)
+                probcut2_label.grid_forget()
+                probcut2_dropdown.grid_forget()
             elif player2.get() == "ProbCut":
                 depth2_label.grid(row=1, column=2)
                 depth2_dropdown.grid(row=1, column=3, padx=10, pady=10)
                 simulation2_label.grid_forget()
                 simulation2_dropdown.grid_forget()
-                delta2_label.grid(row=2, column=2)
-                delta2_dropdown.grid(row=2, column=3, padx=10, pady=10)
+                exploration2_label.grid_forget()
+                exploration2_dropdown.grid_forget()
+                probcut2_label.grid(row=2, column=2)
+                probcut2_dropdown.grid(row=2, column=3, padx=10, pady=10)
 
-        player_options = ["Human", "Minimax", "Monte Carlo", "ProbCut", "Random"]
+        player_options = ["Human", "Minimax", "Monte Carlo", "Expectimax" ,"ProbCut", "Random"]
         player1 = tk.StringVar(self.master)
         player1.set(player_options[0])
         player1.trace("w", callback1)
@@ -176,9 +192,7 @@ class Game:
         depth2.set(depth_options[0])
 
         depth1_label = tk.Label(self.settings_window, text="Depth:")
-        depth1_label.grid(row=1, column=0)
         depth1_dropdown = tk.OptionMenu(self.settings_window, depth1, *depth_options)
-        depth1_dropdown.grid(row=1, column=1, padx=10, pady=10)
         depth2_label = tk.Label(self.settings_window, text="Depth:")
         depth2_label.grid(row=1, column=2)
         depth2_dropdown = tk.OptionMenu(self.settings_window, depth2, *depth_options)
@@ -193,30 +207,39 @@ class Game:
         simulation2.set(simulation_options[0])
 
         simulation1_label = tk.Label(self.settings_window, text="Simulations:")
-        simulation1_label.grid(row=2, column=0)
         simulation1_dropdown = tk.OptionMenu(self.settings_window, simulation1, *simulation_options)
-        simulation1_dropdown.grid(row=2, column=1, padx=10, pady=10)
         simulation2_label = tk.Label(self.settings_window, text="Simulations:")
-        simulation2_label.grid(row=2, column=2)
         simulation2_dropdown = tk.OptionMenu(self.settings_window, simulation2, *simulation_options)
-        simulation2_dropdown.grid(row=2, column=3, padx=10, pady=10)
+
+        # Explaration Selection
+        exploration_options = ["0.9", "1.2", "1.5", "1.8", "2.1", "2.4", "2.7", "3.0"]
+        exploration1 = tk.StringVar(self.master)
+        exploration1.set(exploration_options[0])
+        exploration2 = tk.StringVar(self.master)
+        exploration2.set(exploration_options[0])
+
+        exploration1_label = tk.Label(self.settings_window, text="Exploration:")
+        exploration1_dropdown = tk.OptionMenu(self.settings_window, exploration1, *exploration_options)
+        exploration2_label = tk.Label(self.settings_window, text="Exploration:")
+        exploration2_dropdown = tk.OptionMenu(self.settings_window, exploration2, *exploration_options)
 
 
         # Delta Selection
         delta_options = ["0.4", "0.6", "0.8", "1.0", "1.2", "1.4", "1.5", "1.6", "1.8", "2.0", "2.2"]
-        delta1 = tk.StringVar(self.master)
-        delta1.set(delta_options[0])
-        delta2 = tk.StringVar(self.master)
-        delta2.set(delta_options[0])
+        probcut1 = tk.StringVar(self.master)
+        probcut1.set(delta_options[0])
+        probcut2 = tk.StringVar(self.master)
+        probcut2.set(delta_options[0])
 
-        delta1_label = tk.Label(self.settings_window, text="Deltas:")
-        delta1_label.grid(row=3, column=0)
-        delta1_dropdown = tk.OptionMenu(self.settings_window, delta1, *delta_options)
-        delta1_dropdown.grid(row=3, column=1, padx=10, pady=10)
-        delta2_label = tk.Label(self.settings_window, text="Deltas:")
-        delta2_label.grid(row=3, column=2)
-        delta2_dropdown = tk.OptionMenu(self.settings_window, delta2, *delta_options)
-        delta2_dropdown.grid(row=3, column=3, padx=10, pady=10)
+        probcut1_label = tk.Label(self.settings_window, text="Probcut:")
+        probcut1_dropdown = tk.OptionMenu(self.settings_window, probcut1, *delta_options)
+        probcut2_label = tk.Label(self.settings_window, text="Probcut:")
+        probcut2_dropdown = tk.OptionMenu(self.settings_window, probcut2, *delta_options)
+
+        # OK Button
+        button = tk.Button(self.settings_window, text="OK", padx=18, pady=4)
+        button.grid(row=5, column=3, padx=10, pady=10)
+
 
 
     def __make_a_move(self, row, col, turn):

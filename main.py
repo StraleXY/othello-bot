@@ -28,11 +28,11 @@ if __name__ == "__main__":
     # CarloAgent(br_simulacija, exploration_factor) - Igra pomocu monte karlo pretrage sa datim brojem simulacija i sa datim faktorom istrazivanja
 
     # Ukoliko je igrac protiv agenta koristiti poziv linije 28
-    # game.set_player(ExpectimaxAgent(3))
+    game.set_player(ExpectimaxAgent(3))
 
     # Ukoliko je agent prtiv agenta korisitit poziv linije 31
     # game.set_players(ProbCutAgent(2), ProbCutAgent(3))
-    game.set_players(MinimaxAgent(4), ExpectimaxAgent(5))
+    # game.set_players(ProbCutAgent(2, 0.1), ProbCutAgent(2, 1))
 
     root.mainloop()
 
