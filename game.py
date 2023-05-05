@@ -282,6 +282,7 @@ class Game:
             self.start_simulation()
         elif player2 is not None:
             self.stop_game()
+            self.white = None
             self.set_player(player2)
 
     def __make_a_move(self, row, col, turn):
