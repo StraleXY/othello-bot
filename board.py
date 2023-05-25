@@ -142,12 +142,12 @@ class Board:
         for sequence in sequences:
             self.__place_sequences(sequence, turn)
 
-    def __place_sequences(self, sequence: [(int, int)], piece: str):
+    def __place_sequences(self, sequence: [(int, int)], turn: str):
         for cell in sequence:
-            self.board[cell[0]][cell[1]] = piece
+            self.board[cell[0]][cell[1]] = turn
 
-    def remove_pieces(self, piece: str):
-        self.board = [[EMPTY if element == piece else element for element in inner_lst] for inner_lst in self.board]
+    def remove_pieces(self, turn: str):
+        self.board = [[EMPTY if element == turn else element for element in inner_lst] for inner_lst in self.board]
 
     @staticmethod
     def opposite_turn(turn: str):

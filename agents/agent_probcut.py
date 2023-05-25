@@ -1,8 +1,6 @@
 from agents.agent import Agent
-from board import Board, BLACK, WHITE, MOVE, ROWS, COLS
 from agents.utils import heuristic
 import copy
-import random
 
 
 class ProbCutAgent(Agent):

@@ -1,6 +1,8 @@
 import threading
 import tkinter as tk
 import time
+
+from agents.agent_expectimax import ExpectimaxAgent
 from agents.agent_random import RandomAgent
 from agents.agent_minimax import MinimaxAgent
 from agents.agent_carlo import CarloAgent
@@ -26,11 +28,11 @@ if __name__ == "__main__":
     # CarloAgent(br_simulacija, exploration_factor) - Igra pomocu monte karlo pretrage sa datim brojem simulacija i sa datim faktorom istrazivanja
 
     # Ukoliko je igrac protiv agenta koristiti poziv linije 28
-    # game.set_player(MinimaxAgent(2))
+    game.set_player(ExpectimaxAgent(3))
 
     # Ukoliko je agent prtiv agenta korisitit poziv linije 31
     # game.set_players(ProbCutAgent(2), ProbCutAgent(3))
-    game.set_players(MinimaxAgent(2), MinimaxAgent(3))
+    # game.set_players(ProbCutAgent(2, 0.1), ProbCutAgent(2, 1))
 
     root.mainloop()
 

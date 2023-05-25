@@ -4,6 +4,11 @@ import tkinter as tk
 from tkinter import messagebox
 from agents.agent import Agent
 from board import Board, BLACK, WHITE, MOVE, ROWS, COLS
+from agents.agent_expectimax import ExpectimaxAgent
+from agents.agent_random import RandomAgent
+from agents.agent_minimax import MinimaxAgent
+from agents.agent_carlo import CarloAgent
+from agents.agent_probcut import ProbCutAgent
 
 FIELD_SIZE = 70
 
@@ -29,6 +34,15 @@ class Game:
         self.white = agent_one
         self.set_player(agent_two)
 
+    def stop_game(self):
+        self.game_over = True
+        self.turn = WHITE
+        self.board = Board(self.turn)
+        self.__draw_board()
+
+    def start_simulation(self):
+        self.game_no += 1
+        self.game_over = False
         self.thread = threading.Thread(target=self.__simulation, args=(self.game_no, ))
         self.thread.start()
 
@@ -71,35 +85,205 @@ class Game:
         self.__make_a_move(row, col, WHITE)
 
     def __reset_game(self):
-        self.game_over = True
-        self.turn = WHITE
-        self.board = Board(self.turn)
-        self.__draw_board()
+        self.stop_game()
         if self.white is not None:
             self.white.init(self.board, WHITE)
         if self.black is not None:
             self.black.init(self.board, BLACK)
         self.game_over = False
         if self.thread is not None:
-            self.game_no += 1
-            self.thread = threading.Thread(target=self.__simulation, args=(self.game_no,))
-            self.thread.start()
+            self.start_simulation()
 
     def  __open_settings(self):
-        self.settings_window = tk.Toplevel(self.master)
+        self.settings_window = tk.Toplevel(self.master, padx=80, pady=40)
         self.settings_window.title("Settings")
 
-        # Create the dropdowns for selecting players
-        player1_label = tk.Label(self.settings_window, text="Player 1")
-        player1_label.grid(row=0, column=0)
-        player_options = ["Human", "Minimax", "ProbCut", "Monte Carlo"]
-        player1_dropdown = tk.OptionMenu(self.settings_window, player_options, *player_options)
-        player1_dropdown.grid(column=1, row=0, padx=5, pady=5)
+        def callback1(*args):
+            if self.player1.get() == "Human" or self.player1.get() == "Random":
+                depth1_label.grid_forget()
+                depth1_dropdown.grid_forget()
+                simulation1_label.grid_forget()
+                simulation1_dropdown.grid_forget()
+                exploration1_label.grid_forget()
+                exploration1_dropdown.grid_forget()
+                probcut1_label.grid_forget()
+                probcut1_dropdown.grid_forget()
+            elif self.player1.get() == "Minimax" or self.player1.get() == "Expectimax":
+                depth1_label.grid(row=1, column=0)
+                depth1_dropdown.grid(row=1, column=1, padx=10, pady=10)
+                simulation1_label.grid_forget()
+                simulation1_dropdown.grid_forget()
+                exploration1_label.grid_forget()
+                exploration1_dropdown.grid_forget()
+                probcut1_label.grid_forget()
+                probcut1_dropdown.grid_forget()
+            elif self.player1.get() == "Monte Carlo":
+                depth1_label.grid_forget()
+                depth1_dropdown.grid_forget()
+                simulation1_label.grid(row=1, column=0)
+                simulation1_dropdown.grid(row=1, column=1, padx=10, pady=10)
+                exploration1_label.grid(row=2, column=0)
+                exploration1_dropdown.grid(row=2, column=1, padx=10, pady=10)
+                probcut1_label.grid_forget()
+                probcut1_dropdown.grid_forget()
+            elif self.player1.get() == "ProbCut":
+                depth1_label.grid(row=1, column=0)
+                depth1_dropdown.grid(row=1, column=1, padx=10, pady=10)
+                simulation1_label.grid_forget()
+                simulation1_dropdown.grid_forget()
+                exploration1_label.grid_forget()
+                exploration1_dropdown.grid_forget()
+                probcut1_label.grid(row=2, column=0)
+                probcut1_dropdown.grid(row=2, column=1, padx=10, pady=10)
 
-        player2_label = tk.Label(self.settings_window, text="Player 2")
-        player2_label.grid(row=1, column=0)
-        player2_dropdown = tk.OptionMenu(self.settings_window, player_options, *player_options)
-        player2_dropdown.grid(row=1, column=1, padx=5, pady=5)
+        def callback2(*args):
+            if self.player2.get() == "Human" or self.player2.get() == "Random":
+                depth2_label.grid_forget()
+                depth2_dropdown.grid_forget()
+                simulation2_label.grid_forget()
+                simulation2_dropdown.grid_forget()
+                exploration2_dropdown.grid_forget()
+                exploration2_label.grid_forget()
+                probcut2_label.grid_forget()
+                probcut2_dropdown.grid_forget()
+            elif self.player2.get() == "Minimax" or self.player2.get() == "Expectimax":
+                depth2_label.grid(row=1, column=2)
+                depth2_dropdown.grid(row=1, column=3, padx=10, pady=10)
+                simulation2_label.grid_forget()
+                simulation2_dropdown.grid_forget()
+                exploration2_label.grid_forget()
+                exploration2_dropdown.grid_forget()
+                probcut2_label.grid_forget()
+                probcut2_dropdown.grid_forget()
+            elif self.player2.get() == "Monte Carlo":
+                depth2_label.grid_forget()
+                depth2_dropdown.grid_forget()
+                simulation2_label.grid(row=1, column=2)
+                simulation2_dropdown.grid(row=1, column=3, padx=10, pady=10)
+                exploration2_label.grid(row=2, column=2)
+                exploration2_dropdown.grid(row=2, column=3, padx=10, pady=10)
+                probcut2_label.grid_forget()
+                probcut2_dropdown.grid_forget()
+            elif self.player2.get() == "ProbCut":
+                depth2_label.grid(row=1, column=2)
+                depth2_dropdown.grid(row=1, column=3, padx=10, pady=10)
+                simulation2_label.grid_forget()
+                simulation2_dropdown.grid_forget()
+                exploration2_label.grid_forget()
+                exploration2_dropdown.grid_forget()
+                probcut2_label.grid(row=2, column=2)
+                probcut2_dropdown.grid(row=2, column=3, padx=10, pady=10)
+
+        player1_options = ["Human", "Minimax", "Monte Carlo", "Expectimax", "ProbCut", "Random"]
+        self.player1 = tk.StringVar(self.master)
+        self.player1.set(player1_options[0])
+        self.player1.trace("w", callback1)
+        player2_options = ["Minimax", "Monte Carlo", "Expectimax", "ProbCut", "Random"]
+        self.player2 = tk.StringVar(self.master)
+        self.player2.set(player2_options[0])
+        self.player2.trace("w", callback2)
+
+        # Create the dropdowns for selecting players
+        player1_label = tk.Label(self.settings_window, text="White Player:")
+        player1_label.grid(row=0, column=0)
+        player1_dropdown = tk.OptionMenu(self.settings_window, self.player1, *player1_options)
+        player1_dropdown.grid(row=0, column=1, padx=10, pady=10)
+
+        player2_label = tk.Label(self.settings_window, text="Black Player:")
+        player2_label.grid(row=0, column=2)
+        player2_dropdown = tk.OptionMenu(self.settings_window, self.player2, *player2_options)
+        player2_dropdown.grid(row=0, column=3, padx=10, pady=10)
+
+        # Depth Selection
+        depth_options = ["1", "2", "3", "4", "5", "6", "7", "8"]
+        self.depth1 = tk.StringVar(self.master)
+        self.depth1.set(depth_options[0])
+        self.depth2 = tk.StringVar(self.master)
+        self.depth2.set(depth_options[0])
+
+        depth1_label = tk.Label(self.settings_window, text="Depth:")
+        depth1_dropdown = tk.OptionMenu(self.settings_window, self.depth1, *depth_options)
+        depth2_label = tk.Label(self.settings_window, text="Depth:")
+        depth2_label.grid(row=1, column=2)
+        depth2_dropdown = tk.OptionMenu(self.settings_window, self.depth2, *depth_options)
+        depth2_dropdown.grid(row=1, column=3, padx=10, pady=10)
+
+        # Simulations Selection
+        simulation_options = ["50", "100", "200", "300", "400", "500", "600", "800"]
+        self.simulation1 = tk.StringVar(self.master)
+        self.simulation1.set(simulation_options[0])
+        self.simulation2 = tk.StringVar(self.master)
+        self.simulation2.set(simulation_options[0])
+
+        simulation1_label = tk.Label(self.settings_window, text="Simulations:")
+        simulation1_dropdown = tk.OptionMenu(self.settings_window, self.simulation1, *simulation_options)
+        simulation2_label = tk.Label(self.settings_window, text="Simulations:")
+        simulation2_dropdown = tk.OptionMenu(self.settings_window, self.simulation2, *simulation_options)
+
+        # Explaration Selection
+        exploration_options = ["0.9", "1.2", "1.5", "1.8", "2.1", "2.4", "2.7", "3.0"]
+        self.exploration1 = tk.StringVar(self.master)
+        self.exploration1.set(exploration_options[0])
+        self.exploration2 = tk.StringVar(self.master)
+        self.exploration2.set(exploration_options[0])
+
+        exploration1_label = tk.Label(self.settings_window, text="Exploration:")
+        exploration1_dropdown = tk.OptionMenu(self.settings_window, self.exploration1, *exploration_options)
+        exploration2_label = tk.Label(self.settings_window, text="Exploration:")
+        exploration2_dropdown = tk.OptionMenu(self.settings_window, self.exploration2, *exploration_options)
+
+        # Delta Selection
+        delta_options = ["0.4", "0.6", "0.8", "1.0", "1.2", "1.4", "1.5", "1.6", "1.8", "2.0", "2.2"]
+        self.probcut1 = tk.StringVar(self.master)
+        self.probcut1.set(delta_options[0])
+        self.probcut2 = tk.StringVar(self.master)
+        self.probcut2.set(delta_options[0])
+
+        probcut1_label = tk.Label(self.settings_window, text="Probcut:")
+        probcut1_dropdown = tk.OptionMenu(self.settings_window, self.probcut1, *delta_options)
+        probcut2_label = tk.Label(self.settings_window, text="Probcut:")
+        probcut2_dropdown = tk.OptionMenu(self.settings_window, self.probcut2, *delta_options)
+
+        # OK Button
+        button = tk.Button(self.settings_window, text="OK", padx=18, pady=4, command=self.__confirm)
+        button.grid(row=5, column=3, padx=10, pady=10)
+
+    def __confirm(self):
+        self.stop_game()
+
+        player1 = None
+        player2 = None
+
+        if self.player1.get() == "Random":
+            player1 = RandomAgent()
+        elif self.player1.get() == "Minimax":
+            player1 = MinimaxAgent(int(self.depth1.get()))
+        elif self.player1.get() == "Monte Carlo":
+            player1 = CarloAgent(int(self.simulation1.get()), float(self.exploration1.get()))
+        elif self.player1.get() == "Expectimax":
+            player1 = ExpectimaxAgent(int(self.depth1.get()))
+        elif self.player1.get() == "ProbCut":
+            player1 = ProbCutAgent(int(self.depth1.get()), float(self.probcut1.get()))
+
+        if self.player2.get() == "Random":
+            player2 = RandomAgent()
+        elif self.player2.get() == "Minimax":
+            player2 = MinimaxAgent(int(self.depth2.get()))
+        elif self.player2.get() == "Monte Carlo":
+            player2 = CarloAgent(int(self.simulation2.get()), float(self.exploration2.get()))
+        elif self.player2.get() == "Expectimax":
+            player2 = ExpectimaxAgent(int(self.depth2.get()))
+        elif self.player2.get() == "ProbCut":
+            player2 = ProbCutAgent(int(self.depth2.get()), float(self.probcut2.get()))
+
+        if player1 is not None and player2 is not None:
+            self.stop_game()
+            self.set_players(player1, player2)
+            self.start_simulation()
+        elif player2 is not None:
+            self.stop_game()
+            self.white = None
+            self.set_player(player2)
 
     def __make_a_move(self, row, col, turn):
         result = self.board.move(row, col, turn)
@@ -124,7 +308,6 @@ class Game:
                 white_move = self.white.make_move()
                 if white_move:
                     self.__make_a_move(*white_move, WHITE)
-
             if self.turn == BLACK:
                 black_move = self.black.make_move()
                 if black_move:
