@@ -184,12 +184,12 @@ class Game:
         self.player2.trace("w", callback2)
 
         # Create the dropdowns for selecting players
-        player1_label = tk.Label(self.settings_window, text="Player 1:")
+        player1_label = tk.Label(self.settings_window, text="White Player:")
         player1_label.grid(row=0, column=0)
         player1_dropdown = tk.OptionMenu(self.settings_window, self.player1, *player1_options)
         player1_dropdown.grid(row=0, column=1, padx=10, pady=10)
 
-        player2_label = tk.Label(self.settings_window, text="Player 2:")
+        player2_label = tk.Label(self.settings_window, text="Black Player:")
         player2_label.grid(row=0, column=2)
         player2_dropdown = tk.OptionMenu(self.settings_window, self.player2, *player2_options)
         player2_dropdown.grid(row=0, column=3, padx=10, pady=10)

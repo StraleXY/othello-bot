@@ -41,5 +41,8 @@ class ExpectimaxAgent(Agent):
                 _, score = self.__expectimax(new_board, board.opposite_turn(turn), depth - 1, True)
                 total_score += score
                 num_moves += 1
-            avg_score = total_score / num_moves
+            if total_score == 0:
+                avg_score = 0
+            else:
+                avg_score = total_score / num_moves
             return None, avg_score
